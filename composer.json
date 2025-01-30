@@ -1,0 +1,15 @@
+{
+    "name": "struct/reflection",
+    "license": "MIT",
+    "description": "",
+    "require": {
+        "php": "^8.3.0",
+        "exception/unexpected": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Struct\\Reflection\\": "src",
+            "Struct\\Reflection\\Internal\\": "src-internal"
+        }
+    }
+}
