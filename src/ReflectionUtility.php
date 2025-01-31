@@ -21,6 +21,7 @@ use Struct\Reflection\Internal\Struct\ObjectSignature\Parts\IntersectionType;
 use Struct\Reflection\Internal\Struct\ObjectSignature\Parts\NamedType;
 use Struct\Reflection\Internal\Struct\ObjectSignature\Parts\Visibility;
 use Struct\Reflection\Internal\Struct\ObjectSignature\Property;
+use Struct\Reflection\Internal\Struct\ObjectSignature\Value;
 
 class ReflectionUtility
 {
@@ -153,29 +154,26 @@ class ReflectionUtility
         $isAllowsNull = $type->allowsNull();
         $defaultValue = null;
         $isPromoted = false;
+        $hasDefaultValue = false;
 
         if ($reflectionPropertyOrParameter instanceof ReflectionProperty === true) {
             $hasDefaultValue = $reflectionPropertyOrParameter->hasDefaultValue();
-            if ($hasDefaultValue === true) {
-                $defaultValue = $reflectionPropertyOrParameter->getDefaultValue();
-            }
             $isPromoted = $reflectionPropertyOrParameter->isPromoted();
         }
         if ($reflectionPropertyOrParameter instanceof ReflectionParameter === true) {
             $hasDefaultValue = $reflectionPropertyOrParameter->isDefaultValueAvailable();
-            if ($hasDefaultValue === true) {
-                $defaultValue = $reflectionPropertyOrParameter->getDefaultValue();
-            }
+
         }
-
+        if($hasDefaultValue === true) {
+            $valueData = $reflectionPropertyOrParameter->getDefaultValue();
+            $defaultValue = new Value($valueData);
+        }
         $attributes = self::buildAttributes($reflectionPropertyOrParameter);
-
         $parameter = new Parameter(
             $name,
             $types,
             $isPromoted,
             $isAllowsNull,
-            $hasDefaultValue,
             $defaultValue,
             $attributes,
         );

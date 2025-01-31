@@ -22,8 +22,7 @@ readonly class Parameter
         public array $types,
         public bool $isPromoted,
         public bool $isAllowsNull,
-        public bool $hasDefaultValue,
-        public mixed $defaultValue,
+        public ?Value $defaultValue,
         public array $attributes,
     ) {
     }
