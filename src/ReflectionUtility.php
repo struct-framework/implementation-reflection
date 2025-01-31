@@ -35,7 +35,7 @@ class ReflectionUtility
             $objectName = $object::class;
         }
         $cacheIdentifier = MemoryCache::buildCacheIdentifier($objectName, 'aae38bab-40e9-4193-8e0b-d83154d8368c');
-        if(MemoryCache::has($cacheIdentifier)) {
+        if (MemoryCache::has($cacheIdentifier)) {
             return MemoryCache::read($cacheIdentifier);
         }
         $signature = self::_readSignature($objectName);
@@ -43,11 +43,8 @@ class ReflectionUtility
         return $signature;
     }
 
-
     protected static function _readSignature(string $objectName): ObjectSignature
     {
-
-
         try {
             $reflection = new ReflectionClass($objectName);
             // @phpstan-ignore-next-line

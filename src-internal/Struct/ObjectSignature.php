@@ -13,8 +13,6 @@ use Struct\Reflection\Internal\Struct\ObjectSignature\Property;
  */
 readonly class ObjectSignature
 {
-
-
     /**
      * @param class-string $objectName
      * @param array<Parameter> $constructorArguments
