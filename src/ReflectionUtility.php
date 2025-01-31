@@ -13,7 +13,6 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionProperty;
 use ReflectionUnionType;
-use Struct\Exception\InvalidValueException;
 use Struct\Reflection\Internal\Struct\ObjectSignature;
 use Struct\Reflection\Internal\Struct\ObjectSignature\Method;
 use Struct\Reflection\Internal\Struct\ObjectSignature\Parameter;
@@ -28,27 +27,40 @@ class ReflectionUtility
     /**
      * @param object|class-string $object
      */
-    public static function readObjectSignature(object|string $object): ObjectSignature
+    public static function readSignature(object|string $object): ObjectSignature
     {
         /** @var class-string $objectName */
         $objectName = $object;
         if (is_object($object) === true) {
             $objectName = $object::class;
         }
+        $cacheIdentifier = MemoryCache::buildCacheIdentifier($objectName, 'aae38bab-40e9-4193-8e0b-d83154d8368c');
+        if(MemoryCache::has($cacheIdentifier)) {
+            return MemoryCache::read($cacheIdentifier);
+        }
+        $signature = self::_readSignature($objectName);
+        MemoryCache::write($cacheIdentifier, $signature);
+        return $signature;
+    }
+
+
+    protected static function _readSignature(string $objectName): ObjectSignature
+    {
+
+
         try {
             $reflection = new ReflectionClass($objectName);
             // @phpstan-ignore-next-line
         } catch (ReflectionException $exception) {
             throw new UnexpectedException(1724442032, $exception);
         }
-
         $isReadOnly = $reflection->isReadOnly();
         $isFinal = $reflection->isFinal();
         $constructorArguments = self::readConstructorArguments($reflection);
         $properties = self::readProperties($reflection);
         $methods = self::readMethods($reflection);
 
-        $objectStruct = new ObjectSignature(
+        $signature = new ObjectSignature(
             $objectName,
             $isReadOnly,
             $isFinal,
@@ -56,7 +68,7 @@ class ReflectionUtility
             $properties,
             $methods,
         );
-        return $objectStruct;
+        return $signature;
     }
 
     /**
@@ -138,7 +150,7 @@ class ReflectionUtility
         $name = $reflectionPropertyOrParameter->getName();
         $type = $reflectionPropertyOrParameter->getType();
         if ($type === null) {
-            throw new InvalidValueException('The property <' . $name . '> must have an type declaration', 1724442038);
+            throw new \Exception('The property <' . $name . '> must have an type declaration', 1738314664);
         }
         $types = self::buildTypes($type);
         $isAllowsNull = $type->allowsNull();

@@ -11,5 +11,8 @@
             "Struct\\Reflection\\": "src",
             "Struct\\Reflection\\Internal\\": "src-internal"
         }
+    },
+    "suggest": {
+        "ext-apcu": "*"
     }
 }
