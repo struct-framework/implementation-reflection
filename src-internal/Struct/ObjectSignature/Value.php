@@ -11,5 +11,6 @@ readonly class Value
 {
     public function __construct(
         public mixed $valueData,
-    ) {}
+    ) {
+    }
 }

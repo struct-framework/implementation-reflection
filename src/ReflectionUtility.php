@@ -162,9 +162,8 @@ class ReflectionUtility
         }
         if ($reflectionPropertyOrParameter instanceof ReflectionParameter === true) {
             $hasDefaultValue = $reflectionPropertyOrParameter->isDefaultValueAvailable();
-
         }
-        if($hasDefaultValue === true) {
+        if ($hasDefaultValue === true) {
             $valueData = $reflectionPropertyOrParameter->getDefaultValue();
             $defaultValue = new Value($valueData);
         }
