@@ -52,6 +52,7 @@ class ReflectionUtility
         } catch (ReflectionException $exception) {
             throw new UnexpectedException(1724442032, $exception);
         }
+        $isAbstract = $reflection->isAbstract();
         $isReadOnly = $reflection->isReadOnly();
         $isFinal = $reflection->isFinal();
         $constructorArguments = self::readConstructorArguments($reflection);
@@ -61,6 +62,7 @@ class ReflectionUtility
         $signature = new ObjectSignature(
             $objectName,
             $isReadOnly,
+            $isAbstract,
             $isFinal,
             $constructorArguments,
             $properties,

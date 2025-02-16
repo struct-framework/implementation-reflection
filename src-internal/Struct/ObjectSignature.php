@@ -22,6 +22,7 @@ readonly class ObjectSignature
     public function __construct(
         public string $objectName,
         public bool $isReadOnly,
+        public bool $isAbstract,
         public bool $isFinal,
         public array $constructorArguments,
         public array $properties,
