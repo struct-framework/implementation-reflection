@@ -44,6 +44,22 @@ class ReflectionUtility
         return $signature;
     }
 
+    public static function isAbstract(object|string $object): bool
+    {
+        /** @var class-string $objectName */
+        $objectName = $object;
+        if (is_object($object) === true) {
+            $objectName = $object::class;
+        }
+        try {
+            $reflection = new ReflectionClass($objectName);
+            // @phpstan-ignore-next-line
+        } catch (ReflectionException $exception) {
+            throw new UnexpectedException(1724442032, $exception);
+        }
+        return $reflection->isAbstract();
+    }
+
     protected static function _readSignature(string $objectName): ObjectSignature
     {
         try {
