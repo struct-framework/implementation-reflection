@@ -8,8 +8,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Struct\\Reflection\\": "src",
-            "Struct\\Reflection\\Internal\\": "src-internal"
+            "Struct\\Reflection\\": "src"
         }
     },
     "suggest": {

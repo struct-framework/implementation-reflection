@@ -12,6 +12,7 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionProperty;
+use ReflectionType;
 use ReflectionUnionType;
 use Struct\Reflection\Internal\Struct\ObjectSignature;
 use Struct\Reflection\Internal\Struct\ObjectSignature\Method;
@@ -37,16 +38,21 @@ class ReflectionUtility
         }
         $cacheIdentifier = MemoryCache::buildCacheIdentifier($objectName, 'aae38bab-40e9-4193-8e0b-d83154d8368c');
         if (MemoryCache::has($cacheIdentifier)) {
-            return MemoryCache::read($cacheIdentifier);
+            /** @var ObjectSignature $objectSignature */
+            $objectSignature = MemoryCache::read($cacheIdentifier);
+            return $objectSignature;
         }
         $signature = self::_readSignature($objectName);
         MemoryCache::write($cacheIdentifier, $signature);
         return $signature;
     }
 
+    /**
+     * @param object|class-string<object> $object
+     * @return bool
+     */
     public static function isAbstract(object|string $object): bool
     {
-        /** @var class-string $objectName */
         $objectName = $object;
         if (is_object($object) === true) {
             $objectName = $object::class;
@@ -60,6 +66,9 @@ class ReflectionUtility
         return $reflection->isAbstract();
     }
 
+    /**
+     * @param class-string $objectName
+     */
     protected static function _readSignature(string $objectName): ObjectSignature
     {
         try {
@@ -87,8 +96,10 @@ class ReflectionUtility
         return $signature;
     }
 
+
     /**
-     * @return array<Parameter>
+     * @param ReflectionClass<object> $reflection
+     * @return list<Parameter>
      */
     protected static function readConstructorArguments(ReflectionClass $reflection): array
     {
@@ -104,7 +115,7 @@ class ReflectionUtility
 
     /**
      * @param array<ReflectionParameter> $reflectionParameters
-     * @return array<Parameter>
+     * @return list<Parameter>
      */
     protected static function readParameters(array $reflectionParameters): array
     {
@@ -117,7 +128,8 @@ class ReflectionUtility
     }
 
     /**
-     * @return array<Method>
+     * @param ReflectionClass<object> $reflection
+     * @return list<Method>
      */
     protected static function readMethods(ReflectionClass $reflection): array
     {
@@ -129,9 +141,6 @@ class ReflectionUtility
         return $methods;
     }
 
-    /**
-     * @return array<Method>
-     */
     protected static function readMethod(ReflectionMethod $methodReflection): Method
     {
         $name = $methodReflection->getName();
@@ -165,11 +174,12 @@ class ReflectionUtility
     {
         $name = $reflectionPropertyOrParameter->getName();
         $type = $reflectionPropertyOrParameter->getType();
-        if ($type === null) {
-            throw new \Exception('The property <' . $name . '> must have an type declaration', 1738314664);
+        $types = [];
+        $isAllowsNull = false;
+        if ($type !== null) {
+            $types = self::buildTypes($type);
+            $isAllowsNull = $type->allowsNull();
         }
-        $types = self::buildTypes($type);
-        $isAllowsNull = $type->allowsNull();
         $defaultValue = null;
         $isPromoted = false;
         $hasDefaultValue = false;
@@ -221,7 +231,8 @@ class ReflectionUtility
     }
 
     /**
-     * @return array<Property>
+     * @param ReflectionClass<object> $reflection
+     * @return list<Property>
      */
     protected static function readProperties(ReflectionClass $reflection): array
     {
@@ -267,25 +278,29 @@ class ReflectionUtility
         return $visibility;
     }
 
-    protected static function buildTypes(ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType $type): array
+    /**
+     * @return list<IntersectionType|NamedType>
+     */
+    protected static function buildTypes(ReflectionType|ReflectionNamedType|ReflectionUnionType|ReflectionIntersectionType $type): array
     {
         $propertyTypes = [];
         if ($type instanceof ReflectionNamedType === true) {
             $newPropertyTypes = self::buildFromReflectionNamed($type);
-            $propertyTypes = array_merge($propertyTypes, $newPropertyTypes);
+            $propertyTypes[] = $newPropertyTypes;
         }
         if ($type instanceof ReflectionUnionType === true) {
             $newPropertyTypes = self::buildFromUnionType($type);
-            $propertyTypes = array_merge($propertyTypes, $newPropertyTypes);
+            $propertyTypes = $newPropertyTypes;
         }
         if ($type instanceof ReflectionIntersectionType === true) {
             $newPropertyTypes = self::buildFromIntersectionType($type);
-            $propertyTypes = array_merge($propertyTypes, $newPropertyTypes);
+            $propertyTypes[] = $newPropertyTypes;
         }
         return $propertyTypes;
     }
 
-    protected static function buildFromIntersectionType(ReflectionIntersectionType $type): array
+
+    protected static function buildFromIntersectionType(ReflectionIntersectionType $type): IntersectionType
     {
         $intersectionTypes = [];
         foreach ($type->getTypes() as $intersectionType) {
@@ -297,31 +312,35 @@ class ReflectionUtility
         $propertyType = new IntersectionType(
             $intersectionTypes,
         );
-        return [$propertyType];
+        return $propertyType;
     }
 
+    /**
+     * @return list<IntersectionType|NamedType>
+     */
     protected static function buildFromUnionType(ReflectionUnionType $type): array
     {
         $propertyTypes = [];
         foreach ($type->getTypes() as $unionType) {
             if ($unionType instanceof ReflectionNamedType === true) {
                 $newPropertyTypes = self::buildFromReflectionNamed($unionType);
-                $propertyTypes = array_merge($propertyTypes, $newPropertyTypes);
+                $propertyTypes[] = $newPropertyTypes;
             }
             if ($unionType instanceof ReflectionIntersectionType === true) {
                 $newPropertyTypes = self::buildFromIntersectionType($unionType);
-                $propertyTypes = array_merge($propertyTypes, $newPropertyTypes);
+                $propertyTypes[] = $newPropertyTypes;
             }
         }
         return $propertyTypes;
     }
 
-    protected static function buildFromReflectionNamed(ReflectionNamedType $type): array
+
+    protected static function buildFromReflectionNamed(ReflectionNamedType $type): NamedType
     {
         $propertyType = new NamedType(
             $type->getName(),
             $type->isBuiltin(),
         );
-        return [$propertyType];
+        return $propertyType;
     }
 }
