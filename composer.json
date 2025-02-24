@@ -1,0 +1,17 @@
+{
+    "name": "struct/reflection",
+    "license": "MIT",
+    "description": "",
+    "require": {
+        "php": "^8.4.0",
+        "exception/unexpected": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Struct\\Reflection\\": "src"
+        }
+    },
+    "suggest": {
+        "ext-apcu": "*"
+    }
+}
